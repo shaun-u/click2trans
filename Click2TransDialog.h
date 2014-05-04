@@ -8,9 +8,21 @@
 
 class Click2TransDialog
 {
+  std::vector<const Click2TransSession*> sessions;
+  const std::string id;
+
 public:
-  std::vector<Click2TransSession> sessions;
-  std::string id;
+  Click2TransDialog(const std::string& uniq_id);
+
+  /**
+   * @param session lifecycle managed by SEMS
+   */
+  void addSession(const Click2TransSession* session);
+
+  /**
+   * unique ID of this Click2TransDialog
+   */
+  const std::string& getID() const;
 };
 
 #endif //_CLICK2TRANSDIALOG_H_

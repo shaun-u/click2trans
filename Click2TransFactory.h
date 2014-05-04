@@ -8,12 +8,20 @@
 
 class Click2TransFactory: public AmSessionFactory
 {
-  std::map<std::string, Click2TransDialog> dialogs;
+  /**
+   * active Click2TransDialogs
+   * i.e. active calls
+   */
+  std::map<const std::string, Click2TransDialog*> dialogs;
 
 public:
   Click2TransFactory(const string& _app_name);
 
   int onLoad();
+
+  /**
+   * entry point for calls and hence new Click2TransDialogs
+   */
   AmSession* onInvite(const AmSipRequest& req);
 };
 

@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <string>
+#include <memory>
 
 #define MOD_NAME "click2trans"
 
@@ -21,6 +22,14 @@ int Click2TransFactory::onLoad()
 
 AmSession* Click2TransFactory::onInvite(const AmSipRequest& req)
 {
-  return NULL;
+  const std::string dialogID = AmSession::getNewId();
+  std::auto_ptr<Click2TransDialog> dialog(new Click2TransDialog(dialogID));
+  Click2TransSession* session = new Click2TransSession(dialog.get());
+  dialog->addSession(session);
+  dialogs[dialogID] = dialog.release();
+  
+  DBG("dialog ID=%s created", dialogID.c_str());
+  
+  return session;
 }
 

@@ -3,11 +3,14 @@
 
 #include "AmSession.h"
 
+class Click2TransDialog;
+
 class Click2TransSession : public AmSession
 {
-    
+  const Click2TransDialog* dialog;
+  
 public:
-  Click2TransSession();
+  Click2TransSession(const Click2TransDialog* parentDialog);
   virtual ~Click2TransSession();
 
   void onSessionStart(const AmSipRequest& req);
