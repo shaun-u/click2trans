@@ -22,29 +22,44 @@ void Click2TransSession::onInvite(const AmSipRequest& req)
 
 void Click2TransSession::onSessionStart(const AmSipRequest& req)
 {
-  try
+  if(dialog->isIncoming())
   {
-    std::string sdp_reply;
-    acceptAudio(req.body,req.hdrs,&sdp_reply);
-    if(dlg.reply(req,
-      200,"OK INVITER IS CONNECTED", "application/sdp",
-	sdp_reply) != 0)
+    try
     {
-      throw AmSession::Exception(500,"could not send response");
+      std::string sdp_reply;
+      acceptAudio(req.body,req.hdrs,&sdp_reply);
+      if(dlg.reply(req,
+	200,"OK INVITER IS CONNECTED", "application/sdp",
+	  sdp_reply) != 0)
+      {
+	throw AmSession::Exception(500,"could not send response");
+      }
     }
+    catch(const AmSession::Exception& e)
+    {
+      ERROR("%i %s\n",e.code,e.reason.c_str());
+      setStopped();
+      dlg.reply(req,e.code,e.reason);
+      return;
+    }
+
+    DBG("playing ringtone to inviter");
+
+    setInOut(NULL,ringTone.get());
+    AmSession::onSessionStart(req);
+    AmMediaProcessor::instance()->addSession(this, callgroup);
   }
-  catch(const AmSession::Exception& e)
+  else if(dialog->isOutgoing())
   {
-    ERROR("%i %s\n",e.code,e.reason.c_str());
-    setStopped();
-    dlg.reply(req,e.code,e.reason);
-    return;
+    /*AmUAC::dialout(const string& user,
+    const string& app_name,
+    const string& r_uri, 
+    const string& from,
+    const string& from_uri,
+    const string& to,
+    const string& local_tag,
+    const string& hdrs,
+    AmArg*  session_params);*/
   }
-
-  DBG("playing ringtone to inviter");
-
-  setInOut(NULL,ringTone.get());
-  AmSession::onSessionStart(req);
-  AmMediaProcessor::instance()->addSession(this, callgroup);
 }
 

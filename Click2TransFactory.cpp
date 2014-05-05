@@ -28,8 +28,19 @@ AmSession* Click2TransFactory::onInvite(const AmSipRequest& req)
   dialog->addSession(session);
   dialogs[dialogID] = dialog.release();
   
-  DBG("dialog ID=%s created", dialogID.c_str());
+  DBG("dialog ID=%s created for incoming leg", dialogID.c_str());
   
+  return session;
+}
+
+AmSession* Click2TransFactory::onInvite(const AmSipRequest& req, AmArg& dialogId)
+{
+  const std::string id(dialogId.asCStr());
+  Click2TransSession* session = new Click2TransSession(dialogs[id]);
+  dialogs[id]->addSession(session);
+
+  DBG("dialog ID=%s reused for outgoing call leg", id.c_str());
+
   return session;
 }
 

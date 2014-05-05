@@ -8,10 +8,17 @@
 
 class Click2TransDialog
 {
+  enum DialogState
+  {
+    INCOMING,OUTGOING,TRANSFERRING
+  };
+
   std::vector<const Click2TransSession*> sessions;
   const std::string id;
+  DialogState state;
 
 public:
+
   Click2TransDialog(const std::string& uniq_id);
 
   /**
@@ -23,6 +30,9 @@ public:
    * unique ID of this Click2TransDialog
    */
   const std::string& getID() const;
+
+  bool isIncoming() const;
+  bool isOutgoing() const;
 };
 
 #endif //_CLICK2TRANSDIALOG_H_

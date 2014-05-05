@@ -23,6 +23,12 @@ public:
    * entry point for calls and hence new Click2TransDialogs
    */
   AmSession* onInvite(const AmSipRequest& req);
+
+  /**
+   * second call leg
+   * @dialogId the dialog to which the second leg belongs
+   */
+  AmSession* onInvite(const AmSipRequest& req, AmArg& dialogId);
 };
 
 #endif //_CLICK2TRANSFACTORY_H_
