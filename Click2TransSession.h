@@ -10,14 +10,19 @@ class AmRingTone;
 
 class Click2TransSession : public AmSession
 {
-  const Click2TransDialog* dialog;
+  Click2TransDialog* dialog;
   std::auto_ptr<AmRingTone> ringTone;    
+  std::auto_ptr<AmArg> sessionArg;
 public:
-  Click2TransSession(const Click2TransDialog* parentDialog);
+  Click2TransSession(Click2TransDialog* parentDialog);
   virtual ~Click2TransSession();
 
   void onInvite(const AmSipRequest& req);
   void onSessionStart(const AmSipRequest& req);
+
+  void process(AmEvent* ev);
+  
+  const std::string getDialogID() const;
 };
 
 

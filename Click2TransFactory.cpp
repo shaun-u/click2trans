@@ -33,13 +33,17 @@ AmSession* Click2TransFactory::onInvite(const AmSipRequest& req)
   return session;
 }
 
-AmSession* Click2TransFactory::onInvite(const AmSipRequest& req, AmArg& dialogId)
+AmSession* Click2TransFactory::onInvite(const AmSipRequest& req, AmArg& other)
 {
-  const std::string id(dialogId.asCStr());
+  DBG("NOT HERE");
+  const Click2TransSession* otherSession = 
+    reinterpret_cast<Click2TransSession*>(other.asObject());
+  const std::string id(otherSession->getDialogID());
+  
+  DBG("dialog ID=%s reused for outgoing call leg", id.c_str());
+  
   Click2TransSession* session = new Click2TransSession(dialogs[id]);
   dialogs[id]->addSession(session);
-
-  DBG("dialog ID=%s reused for outgoing call leg", id.c_str());
 
   return session;
 }

@@ -28,7 +28,7 @@ public:
    * second call leg
    * @dialogId the dialog to which the second leg belongs
    */
-  AmSession* onInvite(const AmSipRequest& req, AmArg& dialogId);
+  AmSession* onInvite(const AmSipRequest& req, AmArg& other);
 };
 
 #endif //_CLICK2TRANSFACTORY_H_
