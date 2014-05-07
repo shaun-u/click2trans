@@ -13,7 +13,7 @@ class Click2TransDialog
     INCOMING,OUTGOING,TRANSFERRING
   };
 
-  std::vector<const Click2TransSession*> sessions;
+  std::vector<Click2TransSession*> sessions;
   const std::string id;
   DialogState state;
 
@@ -24,7 +24,7 @@ public:
   /**
    * @param session lifecycle managed by SEMS
    */
-  void addSession(const Click2TransSession* session);
+  void addSession(Click2TransSession* session);
 
   /**
    * unique ID of this Click2TransDialog
@@ -33,6 +33,11 @@ public:
 
   bool isIncoming() const;
   bool isOutgoing() const;
+
+  /**
+   * connect audio streams of active call legs
+   */
+  void connect();
 };
 
 #endif //_CLICK2TRANSDIALOG_H_

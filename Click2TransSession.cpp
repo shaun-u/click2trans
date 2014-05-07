@@ -101,9 +101,9 @@ void Click2TransSession::process(AmEvent* ev)
     Click2TransSession* s = new Click2TransSession(dialog);
     s->dlg.local_tag = AmSession::getNewId();
     s->dlg.callid = AmSession::getNewId();
-    s->dlg.local_party = dlg.local_party;
-    s->dlg.remote_party = "sip:11@192.168.1.111";
-    s->dlg.remote_uri = "sip:11@192.168.1.111";
+    s->dlg.local_party = dlg.remote_party;
+    s->dlg.remote_party = "sip:123@192.168.1.111";
+    s->dlg.remote_uri = "sip:123@192.168.1.111";
     
     std::string body;
     s->sdp.genRequest(s->advertisedIP(),s->RTPStream()->getLocalPort(),body);
@@ -113,12 +113,47 @@ void Click2TransSession::process(AmEvent* ev)
     s->dlg.sendRequest("INVITE","application/sdp",body,"");
     s->start();
     
-    AmSessionContainer::instance()->addSession(dialog->getID(),s);
+    //AmSessionContainer::instance()->addSession(dialog->getID(),s);
+    //I think to receive sip responses, this must be stored under local tag
+    AmSessionContainer::instance()->addSession(s->dlg.local_tag,s);
     
     return;
   }
 
   AmSession::process(ev);
+}
+
+void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status, const string& trans_method)
+{
+  AmSession::onSipReply(reply, old_dlg_status, trans_method);
+
+  DBG("sip reply: code=%i; reason=%s; status=%i", reply.code, reply.reason.c_str(), dlg.getStatus());
+
+  if(dialog->isOutgoing())
+  {
+    DBG("sip reply for outgoing invite");
+
+    switch(dlg.getStatus())
+    {
+      case AmSipDialog::Connected:
+      {
+	DBG("connected: connecting audio");
+	acceptAudio(reply.body, reply.hdrs);
+	dialog->connect();
+	//AmMediaProcessor::instance()->addSession(this,callgroup);
+	break;
+      }
+      default:
+      {
+	DBG("TODO not implemented");
+      }
+    }
+
+  }
+  else
+  {
+    DBG("TODO expected isOutgoing() to be true");
+  }
 }
 
 const std::string Click2TransSession::getDialogID() const
