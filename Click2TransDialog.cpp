@@ -46,24 +46,3 @@ bool Click2TransDialog::isOutgoing() const
   return state == OUTGOING;
 }
 
-void Click2TransDialog::connect()
-{
-  DBG("connecting audio for sessions");
-
-  if(sessions.size() == 2)
-  {
-    DBG("connecting input and output");
-    //sessions[0]->setInOut(sessions[1]->getOutput(),sessions[1]->getInput());
-    //sessions[1]->setInOut(sessions[0]->getOutput(),sessions[0]->getInput());
-    sessions[0]->setInOut(sessions[1]->getInput(),sessions[1]->getOutput());
-    sessions[1]->setInOut(sessions[0]->getInput(),sessions[0]->getOutput());
-    sessions[0]->setCallgroup(getID());
-    sessions[1]->setCallgroup(getID());
-    AmMediaProcessor::instance()->addSession(sessions[0],getID());
-    AmMediaProcessor::instance()->addSession(sessions[1],getID());
-  }
-  else
-  {
-    DBG("TODO there should be two sessions!");
-  }
-}

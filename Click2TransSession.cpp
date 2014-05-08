@@ -63,26 +63,6 @@ void Click2TransSession::onSessionStart(const AmSipRequest& req)
     AmMediaProcessor::instance()->addSession(this, callgroup);
 
     postEvent(new DialoutEvent(DoConnect));//TODO cleanup this allocation?
-
-    /*sessionArg.reset(new AmArg(this));
-    AmUAC::dialout(dlg.user,
-      "click2trans",
-      "sip:11@192.168.1.111",
-      dlg.local_uri,
-      dlg.local_uri,
-      "sip:11@192.168.1.111",
-      "",
-      "",
-      sessionArg.get());*/
-    /*AmUAC::dialout(const string& user,
-    const string& app_name,
-    const string& r_uri, 
-    const string& from,
-    const string& from_uri,
-    const string& to,
-    const string& local_tag,
-    const string& hdrs,
-    AmArg*  session_params);*/
   }
   else if(dialog->isOutgoing())
   {
@@ -125,7 +105,6 @@ void Click2TransSession::process(AmEvent* ev)
 
 void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status, const string& trans_method)
 {
-  AmSession::onSipReply(reply, old_dlg_status, trans_method);
 
   DBG("sip reply: code=%i; reason=%s; status=%i", reply.code, reply.reason.c_str(), dlg.getStatus());
 
@@ -139,8 +118,12 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
       {
 	DBG("connected: connecting audio");
 	acceptAudio(reply.body, reply.hdrs);
-	dialog->connect();
-	//AmMediaProcessor::instance()->addSession(this,callgroup);
+
+	DBG("playing ringtone to invitee");
+
+	setInOut(NULL, ringTone.get());
+	AmMediaProcessor::instance()->addSession(this, callgroup);
+	
 	break;
       }
       default:
@@ -154,6 +137,8 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
   {
     DBG("TODO expected isOutgoing() to be true");
   }
+  
+  AmSession::onSipReply(reply, old_dlg_status, trans_method);
 }
 
 const std::string Click2TransSession::getDialogID() const

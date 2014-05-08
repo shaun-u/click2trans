@@ -33,11 +33,6 @@ public:
 
   bool isIncoming() const;
   bool isOutgoing() const;
-
-  /**
-   * connect audio streams of active call legs
-   */
-  void connect();
 };
 
 #endif //_CLICK2TRANSDIALOG_H_
