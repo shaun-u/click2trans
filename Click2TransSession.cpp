@@ -7,6 +7,7 @@
 
 enum { 
   DoConnect = 100,
+  DoTransfer = 110
 };
 
 struct DialoutEvent : public AmEvent {
@@ -70,6 +71,12 @@ void Click2TransSession::onSessionStart(const AmSipRequest& req)
   }
 }
 
+void Click2TransSession::onDtmf(int event, int duration)
+{
+  DBG("dtmf event=%d",event);
+  postEvent(new DialoutEvent(DoTransfer));//TODO cleanup allocation
+}
+
 void Click2TransSession::process(AmEvent* ev)
 {
   DialoutEvent* devt = dynamic_cast<DialoutEvent*>(ev);
@@ -99,6 +106,42 @@ void Click2TransSession::process(AmEvent* ev)
     
     return;
   }
+  else if(devt && devt->event_id == DoTransfer)
+  {
+    DBG("Transferring call");
+
+    dialog-> transfer();
+
+    Click2TransSession* otherLeg = dialog->getOtherLeg(this);
+    AmMediaProcessor::instance()->removeSession(otherLeg);
+    AmMediaProcessor::instance()->removeSession(this);
+    dialog->disconnectSession(this);
+    dialog->disconnectSession(otherLeg);
+
+    DBG("playing ringtone to inviter");
+
+    setInOut(NULL,ringTone.get());
+    otherLeg->setInOut(NULL,ringTone.get());
+    AmMediaProcessor::instance()->addSession(this, callgroup);
+    AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
+
+    dialog->setTransferSession(otherLeg);
+
+    Click2TransSession* s = new Click2TransSession(dialog);
+    s->dlg.local_tag = AmSession::getNewId();
+    s->dlg.callid = AmSession::getNewId();
+    s->dlg.local_party = dlg.remote_party;
+    s->dlg.remote_party = "sip:iphone@192.168.1.108";
+    s->dlg.remote_uri = "sip:iphone@192.168.1.108";
+    
+    std::string body;
+    s->sdp.genRequest(s->advertisedIP(),s->RTPStream()->getLocalPort(),body);
+    
+    dialog->addSession(s);
+
+    s->dlg.sendRequest("INVITE","application/sdp",body,"");
+    s->start();
+  } 
 
   AmSession::process(ev);
 }

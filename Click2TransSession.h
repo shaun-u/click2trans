@@ -21,6 +21,7 @@ public:
   void onSessionStart(const AmSipRequest& req);
   void onSipReply(const AmSipReply& reply, int old_dlg_status,const string& trans_method);
   void onBye(const AmSipRequest& req);
+  void onDtmf(int event, int duration);
 
   void process(AmEvent* ev);
   

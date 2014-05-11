@@ -17,6 +17,7 @@ class Click2TransDialog
   };
 
   std::vector<Click2TransSession*> sessions;
+  Click2TransSession* trans;
   const std::string id;
   DialogState state;
   std::auto_ptr<AmSessionAudioConnector> connector;
@@ -44,6 +45,8 @@ public:
   void disconnectSession(Click2TransSession* session);
 
   void terminate();
+  void transfer();
+  void setTransferSession(Click2TransSession* kicked); 
 };
 
 #endif //_CLICK2TRANSDIALOG_H_

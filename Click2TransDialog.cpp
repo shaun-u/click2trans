@@ -2,6 +2,8 @@
 #include "AmMediaProcessor.h"
 #include "AmB2ABSession.h"
 
+#include <algorithm>
+
 Click2TransDialog::Click2TransDialog(const std::string& uniq_id) : id(uniq_id)
 {
   connector.reset(new AmSessionAudioConnector);
@@ -87,4 +89,20 @@ void Click2TransDialog::terminate()
 {
   DBG("setting dialog to terminated");
   state = TERMINATED;
+}
+
+void Click2TransDialog::transfer()
+{
+  DBG("setting dialog to transferring");
+  state = TRANSFERRING;
+}
+
+
+void Click2TransDialog::setTransferSession(Click2TransSession* kicked)
+{
+  //TODO implement properly
+  std::vector<Click2TransSession*>::iterator i = std::find(sessions.begin(),
+    sessions.end(), kicked);
+  sessions.erase(i);
+  trans = *i;
 }
