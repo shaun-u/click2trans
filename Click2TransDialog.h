@@ -3,8 +3,11 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "Click2TransSession.h"
+
+class AmSessionAudioConnector;
 
 class Click2TransDialog
 {
@@ -16,7 +19,7 @@ class Click2TransDialog
   std::vector<Click2TransSession*> sessions;
   const std::string id;
   DialogState state;
-
+  std::auto_ptr<AmSessionAudioConnector> connector;
 public:
 
   Click2TransDialog(const std::string& uniq_id);
@@ -33,6 +36,11 @@ public:
 
   bool isIncoming() const;
   bool isOutgoing() const;
+
+  Click2TransSession* getOtherLeg(Click2TransSession* thisLeg);
+
+  void connectSession(Click2TransSession* session);
+  void disconnectSession(Click2TransSession* session);
 };
 
 #endif //_CLICK2TRANSDIALOG_H_

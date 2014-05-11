@@ -119,11 +119,19 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
 	DBG("connected: connecting audio");
 	acceptAudio(reply.body, reply.hdrs);
 
-	DBG("playing ringtone to invitee");
-
-	setInOut(NULL, ringTone.get());
+	Click2TransSession* otherLeg = dialog->getOtherLeg(this);
+	AmMediaProcessor::instance()->removeSession(otherLeg);
+	//setInOut(NULL, ringTone.get());
+	//otherLeg->clearAudio();
+	//setInOut(otherLeg->getOutput(),otherLeg->getInput());
+	//-otherLeg->setInOut(getOutput(),getInput());
+	//otherLeg->setInOut(getInput(),getOutput());
+	//setInOut(otherLeg->getInput(),otherLeg->getOutput());
+	//AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
+	dialog->connectSession(this);
+	dialog->connectSession(otherLeg);
 	AmMediaProcessor::instance()->addSession(this, callgroup);
-	
+	AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
 	break;
       }
       default:
