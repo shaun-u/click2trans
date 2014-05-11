@@ -13,7 +13,7 @@ class Click2TransDialog
 {
   enum DialogState
   {
-    INCOMING,OUTGOING,TRANSFERRING
+    INCOMING,OUTGOING,TRANSFERRING,TERMINATED
   };
 
   std::vector<Click2TransSession*> sessions;
@@ -36,11 +36,14 @@ public:
 
   bool isIncoming() const;
   bool isOutgoing() const;
+  bool isTerminated() const;
 
   Click2TransSession* getOtherLeg(Click2TransSession* thisLeg);
 
   void connectSession(Click2TransSession* session);
   void disconnectSession(Click2TransSession* session);
+
+  void terminate();
 };
 
 #endif //_CLICK2TRANSDIALOG_H_

@@ -141,12 +141,39 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
     }
 
   }
+  else if(dialog->isTerminated())
+  {
+    DBG("setting session to stopped");
+    setStopped();
+  }
   else
   {
     DBG("TODO expected isOutgoing() to be true");
   }
   
   AmSession::onSipReply(reply, old_dlg_status, trans_method);
+}
+
+void Click2TransSession::onBye(const AmSipRequest& req)
+{
+  DBG("bye received");
+  if(!dialog->isTerminated())
+  {
+    DBG("terminating media");
+    dialog->terminate();
+    Click2TransSession* otherLeg = dialog->getOtherLeg(this);
+    AmMediaProcessor::instance()->removeSession(this);
+    AmMediaProcessor::instance()->removeSession(otherLeg);
+    dialog->disconnectSession(this);
+    dialog->disconnectSession(otherLeg);
+
+    DBG("sending bye to other leg");
+    otherLeg->dlg.bye();
+    DBG("setting session to stopped");
+    setStopped();
+  }
+  
+  AmSession::onBye(req);
 }
 
 const std::string Click2TransSession::getDialogID() const

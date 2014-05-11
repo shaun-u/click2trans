@@ -46,6 +46,11 @@ bool Click2TransDialog::isOutgoing() const
   return state == OUTGOING;
 }
 
+bool Click2TransDialog::isTerminated() const
+{
+  return state == TERMINATED;
+}
+
 Click2TransSession* Click2TransDialog::getOtherLeg(Click2TransSession* thisLeg)
 {
   //TODO re-write properly!
@@ -73,5 +78,13 @@ void Click2TransDialog::connectSession(Click2TransSession* session)
 
 void Click2TransDialog::disconnectSession(Click2TransSession* session)
 {
+  DBG("disconnecting session tag=%s",session->getLocalTag().c_str());
 
+  connector->disconnectSession(session);
+}
+
+void Click2TransDialog::terminate()
+{
+  DBG("setting dialog to terminated");
+  state = TERMINATED;
 }
