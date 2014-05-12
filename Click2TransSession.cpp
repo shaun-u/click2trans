@@ -118,14 +118,12 @@ void Click2TransSession::process(AmEvent* ev)
     dialog->disconnectSession(this);
     dialog->disconnectSession(otherLeg);
 
-    DBG("playing ringtone to inviter");
+    DBG("playing ringtone to tranferee");
 
-    setInOut(NULL,ringTone.get());
     otherLeg->setInOut(NULL,ringTone.get());
-    AmMediaProcessor::instance()->addSession(this, callgroup);
     AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
 
-    dialog->setTransferSession(otherLeg);
+    dialog->setTransferer(this);
 
     Click2TransSession* s = new Click2TransSession(dialog);
     s->dlg.local_tag = AmSession::getNewId();
@@ -141,6 +139,7 @@ void Click2TransSession::process(AmEvent* ev)
 
     s->dlg.sendRequest("INVITE","application/sdp",body,"");
     s->start();
+    AmSessionContainer::instance()->addSession(s->dlg.local_tag,s);
   } 
 
   AmSession::process(ev);
@@ -151,7 +150,7 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
 
   DBG("sip reply: code=%i; reason=%s; status=%i", reply.code, reply.reason.c_str(), dlg.getStatus());
 
-  if(dialog->isOutgoing())
+  if(dialog->isOutgoing() || dialog->isTransferring())
   {
     DBG("sip reply for outgoing invite");
 
@@ -175,6 +174,16 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
 	dialog->connectSession(otherLeg);
 	AmMediaProcessor::instance()->addSession(this, callgroup);
 	AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
+
+	if(dialog->isTransferring())
+	{
+	  dialog->outgoing(); 
+	  DBG("sending bye to tranferer");
+	  Click2TransSession* t = dialog->removeTransferer();
+	  t->dlg.bye();
+	  DBG("setting tranferer to stopped");
+	  t->setStopped();
+	}
 	break;
       }
       default:

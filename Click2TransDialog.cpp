@@ -4,32 +4,24 @@
 
 #include <algorithm>
 
-Click2TransDialog::Click2TransDialog(const std::string& uniq_id) : id(uniq_id)
+Click2TransDialog::Click2TransDialog(const std::string& uniq_id) : id(uniq_id),
+  legA(NULL),legB(NULL),legC(NULL),state(TERMINATED)
 {
   connector.reset(new AmSessionAudioConnector);
 }
 
 void Click2TransDialog::addSession(Click2TransSession* session)
 {
-  //TODO ensure unique in container and throw exception if not
-  sessions.push_back(session);
-  
-  switch(sessions.size())
+  if(legA == NULL)
   {
-  case 1:
-    {
-      state = INCOMING;
-      break;
-    }
-  case 2:
-    {
+    state = INCOMING;
+    legA = session;
+  }
+  else if(legB == NULL)
+  {
+    if(state != TRANSFERRING)
       state = OUTGOING;
-      break;
-    }
-  default:
-    {
-
-    }
+    legB = session;
   }
 }
 
@@ -53,20 +45,18 @@ bool Click2TransDialog::isTerminated() const
   return state == TERMINATED;
 }
 
+bool Click2TransDialog::isTransferring() const
+{
+  return state == TRANSFERRING;
+}
+
 Click2TransSession* Click2TransDialog::getOtherLeg(Click2TransSession* thisLeg)
 {
-  //TODO re-write properly!
-  for(unsigned int i = 0; i < sessions.size(); ++i)
-  {
-    if(sessions[i] != thisLeg)
-    {
-      DBG("found other leg");
-      return sessions[i];
-    }
-  }
-
+  if(legA == thisLeg)
+    return legB;
+  if(legB == thisLeg)
+    return legA;
   DBG("did not find other leg");
-
   return NULL;
 }
 
@@ -97,12 +87,29 @@ void Click2TransDialog::transfer()
   state = TRANSFERRING;
 }
 
-
-void Click2TransDialog::setTransferSession(Click2TransSession* kicked)
+void Click2TransDialog::outgoing()
 {
-  //TODO implement properly
-  std::vector<Click2TransSession*>::iterator i = std::find(sessions.begin(),
-    sessions.end(), kicked);
-  sessions.erase(i);
-  trans = *i;
+  DBG("setting dialog to outgoing");
+  state = OUTGOING;
+}
+
+void Click2TransDialog::setTransferer(Click2TransSession* transferer)
+{
+  if(legA == transferer)
+  {
+    legA = legB;
+    legB = NULL;
+  }
+  else if(legB == transferer)
+  {
+    legB = NULL;
+  }
+  legC = transferer;
+}
+
+Click2TransSession* Click2TransDialog::removeTransferer()
+{
+  Click2TransSession* tmp = legC;
+  legC = NULL;
+  return tmp;
 }

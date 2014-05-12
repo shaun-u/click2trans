@@ -16,8 +16,7 @@ class Click2TransDialog
     INCOMING,OUTGOING,TRANSFERRING,TERMINATED
   };
 
-  std::vector<Click2TransSession*> sessions;
-  Click2TransSession* trans;
+  Click2TransSession* legA, *legB, *legC;
   const std::string id;
   DialogState state;
   std::auto_ptr<AmSessionAudioConnector> connector;
@@ -38,6 +37,7 @@ public:
   bool isIncoming() const;
   bool isOutgoing() const;
   bool isTerminated() const;
+  bool isTransferring() const;
 
   Click2TransSession* getOtherLeg(Click2TransSession* thisLeg);
 
@@ -46,7 +46,9 @@ public:
 
   void terminate();
   void transfer();
-  void setTransferSession(Click2TransSession* kicked); 
+  void outgoing();
+  void setTransferer(Click2TransSession* tranferrer); 
+  Click2TransSession* removeTransferer();
 };
 
 #endif //_CLICK2TRANSDIALOG_H_
