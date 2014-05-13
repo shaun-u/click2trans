@@ -113,3 +113,9 @@ Click2TransSession* Click2TransDialog::removeTransferer()
   legC = NULL;
   return tmp;
 }
+
+void Click2TransDialog::doDiTransfer()
+{
+  //convenience: just defer to onDtmf() of first call leg, where transfer is prototyped
+  legA->onDtmf(999,999);//bogus values
+}

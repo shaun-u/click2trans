@@ -37,22 +37,6 @@ AmSession* Click2TransFactory::onInvite(const AmSipRequest& req)
   return session;
 }
 
-AmSession* Click2TransFactory::onInvite(const AmSipRequest& req, AmArg& other)
-{
-  DBG("NOT HERE");
-  const Click2TransSession* otherSession = 
-    reinterpret_cast<Click2TransSession*>(other.asObject());
-  const std::string id(otherSession->getDialogID());
-  
-  DBG("dialog ID=%s reused for outgoing call leg", id.c_str());
-  
-  Click2TransSession* session = new Click2TransSession(dialogs[id]);
-  dialogs[id]->addSession(session);
-
-  return session;
-}
-
-
 Click2TransFactory* Click2TransFactory::getInstance()
 {
   DBG("di instance being returned");
@@ -62,6 +46,9 @@ Click2TransFactory* Click2TransFactory::getInstance()
 void Click2TransFactory::invoke(const string& method, const AmArg& args, AmArg& ret)
 {
   DBG("di invoke method=%s",method.c_str());
-
+  //TODO extract dialog id and destination for transfer sip uri from args and use for transfer
+  
+  //poc: simply invoke transfer on first and only dialog
+  dialogs.begin()->second->doDiTransfer();
 }
 

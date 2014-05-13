@@ -30,12 +30,6 @@ public:
   AmSession* onInvite(const AmSipRequest& req);
 
   /**
-   * second call leg
-   * @dialogId the dialog to which the second leg belongs
-   */
-  AmSession* onInvite(const AmSipRequest& req, AmArg& other);
-
-  /**
    * Dynamic Invoke methods
    */
   Click2TransFactory* getInstance();

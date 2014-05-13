@@ -5,7 +5,7 @@
 #include "AmUAC.h"
 #include "AmSessionContainer.h"
 
-enum { 
+enum {//event IDs 
   DoConnect = 100,
   DoTransfer = 110
 };
@@ -67,7 +67,8 @@ void Click2TransSession::onSessionStart(const AmSipRequest& req)
   }
   else if(dialog->isOutgoing())
   {
-    DBG("outgoing session");  
+    DBG("outgoing session");
+    //nothing to do
   }
 }
 
@@ -81,7 +82,7 @@ void Click2TransSession::process(AmEvent* ev)
 {
   DialoutEvent* devt = dynamic_cast<DialoutEvent*>(ev);
 
-  if(devt && devt->event_id == DoConnect)
+  if(devt && devt->event_id == DoConnect)//connect second leg
   {
     DBG("Inviting invitee");
 
@@ -100,18 +101,18 @@ void Click2TransSession::process(AmEvent* ev)
     s->dlg.sendRequest("INVITE","application/sdp",body,"");
     s->start();
     
-    //AmSessionContainer::instance()->addSession(dialog->getID(),s);
-    //I think to receive sip responses, this must be stored under local tag
+    //to receive sip responses, this must be stored under local tag
     AmSessionContainer::instance()->addSession(s->dlg.local_tag,s);
     
     return;
   }
-  else if(devt && devt->event_id == DoTransfer)
+  else if(devt && devt->event_id == DoTransfer)//transfer to third call leg
   {
     DBG("Transferring call");
 
     dialog-> transfer();
 
+    //unbridge media
     Click2TransSession* otherLeg = dialog->getOtherLeg(this);
     AmMediaProcessor::instance()->removeSession(otherLeg);
     AmMediaProcessor::instance()->removeSession(this);
@@ -119,12 +120,14 @@ void Click2TransSession::process(AmEvent* ev)
     dialog->disconnectSession(otherLeg);
 
     DBG("playing ringtone to tranferee");
-
+    //play ringtone to prove that any media announcement can be 
+    //played to unbridged media streams of established call legs
     otherLeg->setInOut(NULL,ringTone.get());
     AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
 
     dialog->setTransferer(this);
 
+    //invite third leg
     Click2TransSession* s = new Click2TransSession(dialog);
     s->dlg.local_tag = AmSession::getNewId();
     s->dlg.callid = AmSession::getNewId();
@@ -161,15 +164,9 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
 	DBG("connected: connecting audio");
 	acceptAudio(reply.body, reply.hdrs);
 
+	//bridge media
 	Click2TransSession* otherLeg = dialog->getOtherLeg(this);
 	AmMediaProcessor::instance()->removeSession(otherLeg);
-	//setInOut(NULL, ringTone.get());
-	//otherLeg->clearAudio();
-	//setInOut(otherLeg->getOutput(),otherLeg->getInput());
-	//-otherLeg->setInOut(getOutput(),getInput());
-	//otherLeg->setInOut(getInput(),getOutput());
-	//setInOut(otherLeg->getInput(),otherLeg->getOutput());
-	//AmMediaProcessor::instance()->addSession(otherLeg, callgroup);
 	dialog->connectSession(this);
 	dialog->connectSession(otherLeg);
 	AmMediaProcessor::instance()->addSession(this, callgroup);
@@ -177,6 +174,7 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
 
 	if(dialog->isTransferring())
 	{
+	  //sunny day transfer complete
 	  dialog->outgoing(); 
 	  DBG("sending bye to tranferer");
 	  Click2TransSession* t = dialog->removeTransferer();
@@ -188,7 +186,7 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
       }
       default:
       {
-	DBG("TODO not implemented");
+	DBG("TODO not implemented");//nothing to do
       }
     }
 
@@ -200,7 +198,7 @@ void Click2TransSession::onSipReply(const AmSipReply& reply, int old_dlg_status,
   }
   else
   {
-    DBG("TODO expected isOutgoing() to be true");
+    DBG("TODO expected isOutgoing() to be true");//never called
   }
   
   AmSession::onSipReply(reply, old_dlg_status, trans_method);
@@ -211,6 +209,7 @@ void Click2TransSession::onBye(const AmSipRequest& req)
   DBG("bye received");
   if(!dialog->isTerminated())
   {
+    //one call leg has hung up; unbridge media and send bye to other connected call leg
     DBG("terminating media");
     dialog->terminate();
     Click2TransSession* otherLeg = dialog->getOtherLeg(this);
